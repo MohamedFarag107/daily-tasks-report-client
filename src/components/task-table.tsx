@@ -9,9 +9,17 @@ import {
   getCoreRowModel,
 } from "@tanstack/react-table";
 import { ArrowUpDown, Edit, Trash } from "lucide-react";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import { clearTask, setTask } from "@/store/task-slice";
+import { useDeleteTaskMutation, useGetTasksQuery } from "@/api/task";
+import { serializedError } from "@/lib/serialized-error";
+import { formateTaskDate } from "@/lib/date";
+import { Task } from "@/types/task";
 import { Button } from "@/components/ui/button";
-
 import {
   Table,
   TableBody,
@@ -20,22 +28,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Task } from "@/types/task";
-import { useDeleteTaskMutation, useGetTasksQuery } from "@/api/task";
-import { useSearchParams } from "react-router-dom";
-import { serializedError } from "@/lib/serialized-error";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import { formateTaskDate } from "@/lib/date";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-import { useAppDispatch, useAppSelector } from "@/store/store";
-import { clearTask, setTask } from "@/store/task-slice";
-import { toast } from "sonner";
+import { TaskTableLoading } from "@/components/task-table-loading";
+import { ErrorCard } from "@/components/error-card";
 
 interface TasksTableProps {
   employeeId: number;
@@ -241,28 +235,8 @@ export const TasksTable: React.FC<TasksTableProps> = ({ date, employeeId }) => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError)
-    return (
-      <div className="mt-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Error</CardTitle>
-          </CardHeader>
-
-          <CardContent>{serializedError(error).error}</CardContent>
-          <CardFooter>
-            <Button
-              onClick={() => {
-                setSearchParams({});
-              }}
-            >
-              Retry
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
+  if (isLoading) return <TaskTableLoading />;
+  if (isError) return <ErrorCard error={error} />;
 
   return (
     <div className="w-full mt-4">

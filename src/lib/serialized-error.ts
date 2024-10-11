@@ -8,7 +8,7 @@ export const serializedError = (error: any): ApiError => {
   return {
     statusCode: 500,
     name: "Internal Server Error",
-    error: error.message || "An error occurred",
-    stack: error.stack,
+    error: error?.message || "An error occurred",
+    stack: error?.stack,
   };
 };

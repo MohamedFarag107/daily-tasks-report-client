@@ -8,9 +8,10 @@ import { Card } from "@/components/ui/card";
 import { EmployeeCard } from "@/components/employee-card";
 import { TaskForm } from "@/components/task-form";
 import { useGetDailyTaskSummaryQuery } from "@/api/task";
-import { serializedError } from "@/lib/serialized-error";
 import { TasksTable } from "@/components/task-table";
 import { useAppSelector } from "@/store/store";
+import { TaskPageLoading } from "@/components/task-page-loading";
+import { ErrorCard } from "@/components/error-card";
 
 export const Tasks = () => {
   const { employeeId } = useParams();
@@ -23,20 +24,15 @@ export const Tasks = () => {
     employeeId: employeeId!,
   });
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError) {
-    return <div>Error: {serializedError(error).error}</div>;
-  }
+  if (isLoading) return <TaskPageLoading />;
+  if (isError) return <ErrorCard error={error} />;
 
   return (
     <div className="space-y-4 my-4">
       <EmployeeCard employeeId={employeeId!} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DailyTaskSummary date={date} data={data?.data} />
-        <Card>
+        <Card className="flex justify-center items-center">
           <Calendar
             mode="single"
             selected={date}

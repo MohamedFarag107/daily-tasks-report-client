@@ -86,7 +86,7 @@ export const DailyTaskSummary: React.FC<DailyTaskSummaryProps> = ({
             )}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex-1 pb-0">
+        <CardContent className="flex-1">
           <ChartContainer
             config={chartConfig}
             className="mx-auto aspect-square max-h-[250px]"

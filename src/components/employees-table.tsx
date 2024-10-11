@@ -1,46 +1,41 @@
 import * as React from "react";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  useReactTable,
-  getCoreRowModel,
-} from "@tanstack/react-table";
+import { Link, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { ArrowUpDown, Edit, MoreHorizontal, Trash } from "lucide-react";
+import {
+    ColumnDef,
+    ColumnFiltersState,
+    SortingState,
+    VisibilityState,
+    flexRender,
+    useReactTable,
+    getCoreRowModel,
+} from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
+import { EmployeesTableLoading } from "@/components/employees-table-loading";
+import { ErrorCard } from "@/components/error-card";
 import { Employee } from "@/types/employee";
-import {
-  useDeleteEmployeeMutation,
-  useGetEmployeesQuery,
-} from "@/api/employee";
-import { Link, useSearchParams } from "react-router-dom";
 import { serializedError } from "@/lib/serialized-error";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import { toast } from "sonner";
+    useDeleteEmployeeMutation,
+    useGetEmployeesQuery,
+} from "@/api/employee";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { clearEmployee, setEmployee } from "@/store/employee-slice";
 
@@ -218,28 +213,8 @@ export function EmployeesTable() {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError)
-    return (
-      <div className="mt-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Error</CardTitle>
-          </CardHeader>
-
-          <CardContent>{serializedError(error).error}</CardContent>
-          <CardFooter>
-            <Button
-              onClick={() => {
-                setSearchParams({});
-              }}
-            >
-              Retry
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
+  if (isLoading) return <EmployeesTableLoading />;
+  if (isError) return <ErrorCard error={error} />;
 
   return (
     <div className="w-full mt-4">

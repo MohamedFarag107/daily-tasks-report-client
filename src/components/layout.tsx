@@ -1,6 +1,6 @@
 import { ListTodo, Search } from "lucide-react";
 import { Input } from "./ui/input";
-import { Link, Outlet, useSearchParams } from "react-router-dom";
+import { Link, useOutlet, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 
 const Header: React.FC = () => {
@@ -38,15 +38,16 @@ const Header: React.FC = () => {
   );
 };
 
-interface LayoutProps {}
+interface LayoutProps {
+  children?: React.ReactNode;
+}
 
-export const Layout: React.FC<LayoutProps> = ({}) => {
+export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const outlet = useOutlet();
   return (
     <div>
       <Header />
-      <main className="container">
-        <Outlet />
-      </main>
+      <main className="container">{outlet ? outlet : children}</main>
     </div>
   );
 };
