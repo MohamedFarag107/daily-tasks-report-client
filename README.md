@@ -1,50 +1,99 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Daily Task Report - Frontend
 
-Currently, two official plugins are available:
+Daily Task Report - Track and Manage Your Productivity
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+## Author
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- [Mohamed Farag](https://github.com/MohamedFarag107)
 
-- Configure the top-level `parserOptions` property like this:
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Demo
+
+- [Live Demo](http://mfarag.me)
+
+
+## Features
+
+- Employee Management
+
+  - Create Employee: Allows the creation of a new employee through a user-friendly form.
+  - Update Employee: Enables updating an existing employee's details via an intuitive interface.
+  - Delete Employee: Facilitates the deletion of an employee by ID with confirmation prompts.
+  - View Employee: Retrieves and displays a single employee's details by their ID.
+  - List Employees: Fetches and displays a list of all employees with optional pagination and filtering.
+
+- Task Management
+
+  - Create Task: Allows the creation of a new task through a simple form.
+  - Update Task: Enables updating an existing task's details via an easy-to-use interface.
+  - Delete Task: Facilitates the deletion of a task by ID with confirmation prompts.
+  - View Task: Retrieves and displays a single task's details by its ID.
+  - List Tasks: Fetches and displays a list of all tasks with optional pagination and filtering.
+  - Daily Task Summary: Provides a summary of tasks for each employee on a daily basis.
+
+- Validation
+
+  - Input validation is performed on the client-side to ensure data integrity and correctness.
+
+- Error Handling
+
+  - User-friendly error messages and notifications for better user experience.
+
+- Environment Configuration
+
+  - Configurable via environment variables for different environments (development and production).
+
+- State Management
+
+  - Uses Redux for state management to handle complex state logic.
+
+- Styling
+
+  - Use shadcn/ui for styling components and pages.
+
+- API Integration
+
+  - Integrates with the backend API to fetch and manipulate data using Rtk  Query.
+
+- Responsive Design
+
+  - Fully responsive design to ensure usability across different devices.
+
+
+# How To Get Started
+
+<!-- pre requirement -->
+
+## Pre Requirement
+
+### Install Dependencies
+
+```bash
+yarn
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Create `.env.development` for development and `.env.production` for production in the root project folder with the following content:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+```bash
+VITE_APP_URL="http://localhost:3001"
+```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+### Run Development
+
+```bash
+yarn dev
+```
+
+### Build for Production
+
+```bash
+yarn build
+```
+
+### Serve Production Build
+
+```bash
+yarn preview
 ```
