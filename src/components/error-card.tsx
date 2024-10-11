@@ -1,14 +1,14 @@
 import { useSearchParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { serializedError } from "@/lib/serialized-error";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/card";
-import { serializedError } from "@/lib/serialized-error";
+} from "@/components/ui/card";
 
 interface ErrorCardProps {
   error: any;

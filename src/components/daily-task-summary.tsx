@@ -1,5 +1,12 @@
 import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
+import {
+  addMinutes,
+  format,
+  formatDuration,
+  intervalToDuration,
+  startOfDay,
+} from "date-fns";
 
 import {
   Card,
@@ -17,13 +24,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { MAX_HOURS } from "@/constants";
-import {
-  addMinutes,
-  format,
-  formatDuration,
-  intervalToDuration,
-  startOfDay,
-} from "date-fns";
 import { DailyTaskSummary as TaskSummary } from "@/types/task";
 
 interface DailyTaskSummaryProps {

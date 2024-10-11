@@ -2,6 +2,8 @@ import React, { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import {
   set,
   differenceInMinutes,
@@ -11,8 +13,16 @@ import {
   addMinutes,
 } from "date-fns";
 
-import { TimePicker12Hour } from "./time-picker-12hour";
+import { TimePicker12Hour } from "@/components/time-picker-12hour";
 import { Task } from "@/types/task";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { useCreateTaskMutation, useUpdateTaskMutation } from "@/api/task";
+import { serializedError } from "@/lib/serialized-error";
+import { useAppDispatch } from "@/store/store";
+import { clearTask } from "@/store/task-slice";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import {
   Form,
   FormControl,
@@ -21,17 +31,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { Textarea } from "./ui/textarea";
-import { Button } from "./ui/button";
-import { useCreateTaskMutation, useUpdateTaskMutation } from "@/api/task";
-import { toast } from "sonner";
-import { serializedError } from "@/lib/serialized-error";
-import { useAppDispatch } from "@/store/store";
-import { clearTask } from "@/store/task-slice";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { AlertTriangle } from "lucide-react";
-import { Badge } from "./ui/badge";
+} from "@/components/ui/form";
 
 interface TaskFormProps {
   task?: Task;

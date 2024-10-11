@@ -1,7 +1,8 @@
 import * as React from "react";
+
 import { Label } from "@/components/ui/label";
-import { TimePickerInput } from "./time-picker-input";
-import { TimePeriodSelect } from "./period-select";
+import { TimePickerInput } from "@/components/time-picker-input";
+import { TimePeriodSelect } from "@/components/period-select";
 import { Period } from "@/lib/time-picker-utils";
 
 interface TimePickerDemoProps {

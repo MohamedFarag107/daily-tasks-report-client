@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { serializedError } from "@/lib/serialized-error";
+import { useAppDispatch } from "@/store/store";
+import { clearEmployee } from "@/store/employee-slice";
+import { Card, CardContent } from "@/components/ui/card";
+import { Employee } from "@/types/employee";
 import {
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
 } from "@/api/employee";
-import { toast } from "sonner";
-import { serializedError } from "@/lib/serialized-error";
-import { useAppDispatch } from "@/store/store";
-import { clearEmployee } from "@/store/employee-slice";
 import {
   Form,
   FormControl,
@@ -20,10 +23,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-
-import { Employee } from "@/types/employee";
-import { Card, CardContent } from "./ui/card";
+} from "@/components/ui/form";
 
 interface EmployeeFormProps {
   employee?: Employee;

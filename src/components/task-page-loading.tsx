@@ -1,13 +1,14 @@
 import { Pie, PieChart } from "recharts";
-import { TaskTableLoading } from "./task-table-loading";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+
+import { TaskTableLoading } from "@/components/task-table-loading";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
-} from "./ui/chart";
-import { Skeleton } from "./ui/skeleton";
+} from "@/components/ui/chart";
 
 const chartData = [
   {

@@ -3,8 +3,8 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
 import { api } from "@/api/base";
-import { taskReducer } from "./task-slice";
-import { employeeReducer } from "./employee-slice";
+import { taskReducer } from "@/store/task-slice";
+import { employeeReducer } from "@/store/employee-slice";
 
 export const store = configureStore({
   reducer: {

@@ -20,6 +20,8 @@ import { serializedError } from "@/lib/serialized-error";
 import { formateTaskDate } from "@/lib/date";
 import { Task } from "@/types/task";
 import { Button } from "@/components/ui/button";
+import { TaskTableLoading } from "@/components/task-table-loading";
+import { ErrorCard } from "@/components/error-card";
 import {
   Table,
   TableBody,
@@ -28,8 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TaskTableLoading } from "@/components/task-table-loading";
-import { ErrorCard } from "@/components/error-card";
 
 interface TasksTableProps {
   employeeId: number;
@@ -190,10 +190,8 @@ export const TasksTable: React.FC<TasksTableProps> = ({ date, employeeId }) => {
   // Handle page out of range
   React.useEffect(() => {
     if (pagination && page > pagination.totalPages) {
-      setSearchParams({
-        ...Object.fromEntries(searchParams),
-        page: pagination.totalPages.toString(),
-      });
+      searchParams.set("page", pagination.totalPages.toString());
+      setSearchParams(searchParams);
     }
   }, [pagination, page, searchParams, setSearchParams]);
 

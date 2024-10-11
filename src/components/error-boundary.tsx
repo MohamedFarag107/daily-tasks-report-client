@@ -1,15 +1,15 @@
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 
+import { Button } from "@/components/ui/button";
+import { Layout } from "@/components/layout";
+import { serializedError } from "@/lib/serialized-error";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/card";
-import { Button } from "./ui/button";
-import { Layout } from "./layout";
-import { serializedError } from "@/lib/serialized-error";
+} from "@/components/ui/card";
 
 interface ErrorFallbackProps extends FallbackProps {}
 export const FallbackRender: React.FC<ErrorFallbackProps> = ({

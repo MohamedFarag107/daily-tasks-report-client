@@ -1,17 +1,35 @@
-import { ListTodo, Search } from "lucide-react";
-import { Input } from "./ui/input";
+import { useState, useEffect, useRef } from "react";
 import { Link, useOutlet, useSearchParams } from "react-router-dom";
-import { useState } from "react";
+import { ListTodo, Search } from "lucide-react";
+
+import { Input } from "@/components/ui/input";
 
 const Header: React.FC = () => {
   const [searchParam, setSearchParam] = useSearchParams();
   const [search, setSearch] = useState(searchParam.get("search") || "");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     searchParam.set("search", search);
     setSearchParam(searchParam);
   };
+
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      searchParam.set("search", search);
+      setSearchParam(searchParam);
+    }, 100);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [search, searchParam, setSearchParam]);
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">

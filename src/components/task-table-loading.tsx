@@ -1,3 +1,4 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -5,8 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
-import { Skeleton } from "./ui/skeleton";
+} from "@/components/ui/table";
 
 export const TaskTableLoading = () => {
   return (

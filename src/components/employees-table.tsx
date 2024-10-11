@@ -3,41 +3,41 @@ import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowUpDown, Edit, MoreHorizontal, Trash } from "lucide-react";
 import {
-    ColumnDef,
-    ColumnFiltersState,
-    SortingState,
-    VisibilityState,
-    flexRender,
-    useReactTable,
-    getCoreRowModel,
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  useReactTable,
+  getCoreRowModel,
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { EmployeesTableLoading } from "@/components/employees-table-loading";
 import { ErrorCard } from "@/components/error-card";
 import { Employee } from "@/types/employee";
 import { serializedError } from "@/lib/serialized-error";
-import {
-    useDeleteEmployeeMutation,
-    useGetEmployeesQuery,
-} from "@/api/employee";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { clearEmployee, setEmployee } from "@/store/employee-slice";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useDeleteEmployeeMutation,
+  useGetEmployeesQuery,
+} from "@/api/employee";
 
 export function EmployeesTable() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -94,10 +94,8 @@ export function EmployeesTable() {
   // Handle page out of range
   React.useEffect(() => {
     if (pagination && page > pagination.totalPages) {
-      setSearchParams({
-        ...Object.fromEntries(searchParams),
-        page: pagination.totalPages.toString(),
-      });
+      searchParams.set("page", pagination.totalPages.toString());
+      setSearchParams(searchParams);
     }
   }, [pagination, page, searchParams, setSearchParams]);
 
