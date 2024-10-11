@@ -24,9 +24,14 @@ import {
 } from "./ui/form";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { useCreateTaskMutation } from "@/api/task";
+import { useCreateTaskMutation, useUpdateTaskMutation } from "@/api/task";
 import { toast } from "sonner";
 import { serializedError } from "@/lib/serialized-error";
+import { useAppDispatch } from "@/store/store";
+import { clearTask } from "@/store/task-slice";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { AlertTriangle } from "lucide-react";
+import { Badge } from "./ui/badge";
 
 interface TaskFormProps {
   task?: Task;
@@ -35,7 +40,7 @@ interface TaskFormProps {
   employeeId: number;
 }
 
-const formSchema = (maxMinutes: number) =>
+const formSchema = (maxMinutes: number, task?: Task) =>
   z
     .object({
       description: z
@@ -48,15 +53,30 @@ const formSchema = (maxMinutes: number) =>
       message: "To date must be greater than from date",
       path: ["to"],
     })
-    .refine((data) => differenceInMinutes(data.to, data.from) <= maxMinutes, {
-      message: `Total duration must be less than or equal to ${formatDuration(
-        intervalToDuration({
-          start: startOfDay(new Date()),
-          end: addMinutes(startOfDay(new Date()), maxMinutes),
-        })
-      )}`,
-      path: ["to"],
-    });
+    .refine(
+      (data) => {
+        const duration = differenceInMinutes(data.to, data.from);
+        if (task) {
+          const originalDuration = differenceInMinutes(
+            new Date(task.to),
+            new Date(task.from)
+          );
+          return duration <= maxMinutes + originalDuration;
+        }
+        return duration <= maxMinutes;
+      },
+      {
+        message: `Total duration must be less than or equal to ${
+          formatDuration(
+            intervalToDuration({
+              start: startOfDay(new Date()),
+              end: addMinutes(startOfDay(new Date()), maxMinutes),
+            })
+          ) || "0 minutes"
+        }`,
+        path: ["to"],
+      }
+    );
 
 type FormType = z.infer<ReturnType<typeof formSchema>>;
 
@@ -70,7 +90,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     () => ({
       description: task?.description ?? "",
       from: task ? new Date(task.from) : date,
-      to: task ? new Date(task.to) : date,
+      to: task ? new Date(task.to) : addMinutes(date, Math.min(maxMinutes, 30)),
     }),
     [date, task]
   );
@@ -78,10 +98,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   const [createTask, { isLoading: isCreateTaskLoading }] =
     useCreateTaskMutation();
 
-  const isLoading = isCreateTaskLoading;
+  const [updateTask, { isLoading: isUpdateTaskLoading }] =
+    useUpdateTaskMutation();
+
+  const isLoading = isCreateTaskLoading || isUpdateTaskLoading;
 
   const form = useForm<FormType>({
-    resolver: zodResolver(formSchema(maxMinutes)),
+    resolver: zodResolver(formSchema(maxMinutes, task)),
     defaultValues,
     mode: "onBlur",
   });
@@ -100,18 +123,26 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
       form.setValue("from", updateTime(form.getValues("from")));
       form.setValue("to", updateTime(form.getValues("to")));
+      form.setValue("description", "");
     }
-  }, [date, task]);
+  }, [defaultValues]);
+
+  const dispatch = useAppDispatch();
 
   const resetForm = () => {
-    form.reset({ description: "", from: date, to: date });
+    dispatch(clearTask());
+    form.reset({
+      description: "",
+      from: date,
+      to: addMinutes(date, Math.min(maxMinutes, 30)),
+    });
   };
 
   function onSubmit({ description, from, to }: FormType) {
     if (isLoading) return;
 
     if (!task) {
-      toast.promise(
+      return toast.promise(
         createTask({
           description,
           employeeId,
@@ -130,10 +161,64 @@ export const TaskForm: React.FC<TaskFormProps> = ({
         }
       );
     }
+
+    return toast.promise(
+      updateTask({
+        taskId: task.id,
+        description,
+        employeeId,
+        from: from.toISOString(),
+        to: to.toISOString(),
+      }).unwrap(),
+      {
+        loading: "Updating task...",
+        success: ({ message }) => {
+          resetForm();
+          return message;
+        },
+        error: (error) => {
+          return serializedError(error).error;
+        },
+      }
+    );
   }
+
+  const duration = () => {
+    const from = form.watch("from");
+    const to = form.watch("to");
+
+    const timeDuration = formatDuration(
+      intervalToDuration({
+        start: from,
+        end: to,
+      })
+    );
+
+    return timeDuration ? `Current Task Duration is: ${timeDuration}` : "";
+  };
+
+  const taskDuration = useMemo(duration, [
+    form.watch("from"),
+    form.watch("to"),
+  ]);
 
   return (
     <>
+      {maxMinutes === 0 && (
+        <Alert variant="default" className="bg-yellow-50 border-yellow-300">
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <AlertTitle className="text-yellow-800">
+            Time Limit Exceeded
+          </AlertTitle>
+          <AlertDescription className="text-yellow-700">
+            You have exceeded the 8-hour task duration. You can not create more
+            tasks for today.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {taskDuration ? <Badge>{taskDuration}</Badge> : ""}
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -145,7 +230,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                   Description <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Task Description" {...field} />
+                  <Textarea
+                    className="min-h-32"
+                    placeholder="Task Description"
+                    {...field}
+                  />
                 </FormControl>
                 <FormDescription>
                   Enter a brief description of the task you performed.
@@ -158,7 +247,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             <FormField
               control={form.control}
               name="from"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>
                     From <span className="text-red-500">*</span>
@@ -167,7 +256,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                     <TimePicker12Hour
                       date={form.getValues("from")}
                       setDate={(date) => form.setValue("from", date!)}
-                      {...field}
                     />
                   </FormControl>
                   <FormDescription>
@@ -180,7 +268,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             <FormField
               control={form.control}
               name="to"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>
                     To <span className="text-red-500">*</span>
@@ -189,7 +277,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                     <TimePicker12Hour
                       date={form.getValues("to")}
                       setDate={(date) => form.setValue("to", date!)}
-                      {...field}
                     />
                   </FormControl>
                   <FormDescription>
@@ -200,9 +287,25 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               )}
             />
           </div>
-          <Button type="submit" disabled={isLoading || maxMinutes === 0}>
-            Submit
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              type="submit"
+              disabled={task ? isLoading : isLoading || maxMinutes === 0}
+            >
+              {task ? "Update Task " : "Create Task "}{" "}
+            </Button>
+            {task && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
         </form>
       </Form>
     </>

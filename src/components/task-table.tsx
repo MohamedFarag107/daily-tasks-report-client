@@ -8,16 +8,10 @@ import {
   useReactTable,
   getCoreRowModel,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Edit, MoreHorizontal, Trash } from "lucide-react";
+import { ArrowUpDown, Edit, Trash } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Table,
   TableBody,
@@ -26,12 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Employee } from "@/types/employee";
-import {
-  useDeleteEmployeeMutation,
-  useGetEmployeesQuery,
-} from "@/api/employee";
-import { Link, useSearchParams } from "react-router-dom";
+import { Task } from "@/types/task";
+import { useDeleteTaskMutation, useGetTasksQuery } from "@/api/task";
+import { useSearchParams } from "react-router-dom";
 import { serializedError } from "@/lib/serialized-error";
 import {
   Card,
@@ -40,84 +31,105 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { toast } from "sonner";
+import { formateTaskDate } from "@/lib/date";
+import { format, formatDuration, intervalToDuration } from "date-fns";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { clearEmployee, setEmployee } from "@/store/employee-slice";
+import { clearTask, setTask } from "@/store/task-slice";
+import { toast } from "sonner";
 
-export function EmployeesTable() {
+interface TasksTableProps {
+  employeeId: number;
+  date: Date;
+}
+
+export const TasksTable: React.FC<TasksTableProps> = ({ date, employeeId }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get("search") ?? "";
   const order = searchParams.get("order") ?? "asc";
   const pageParams = Number(searchParams.get("page")) || 1;
   const page = pageParams < 1 ? 1 : pageParams;
-  const { data, isLoading, isError, error } = useGetEmployeesQuery({
-    name: search,
+  const { data, isLoading, isError, error } = useGetTasksQuery({
+    description: search,
     page,
     [`order[created_at]`]: order,
+    ["filter[date]"]: formateTaskDate(date),
+    ["filter[employeeId]"]: employeeId,
   });
 
-  const [deleteEmployee, { isLoading: isDeleteEmployeeLoading }] =
-    useDeleteEmployeeMutation();
-
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
   const dispatch = useAppDispatch();
+  const [deleteTask, { isLoading: isDeleteTaskLoading }] =
+    useDeleteTaskMutation();
 
-  const employees = data?.data ?? [];
-  const pagination = data?.pagination;
+  const handleUpdateTask = (task: Task) => {
+    dispatch(setTask(task));
+  };
 
-  const currentSelectedEmployee = useAppSelector(
-    (state) => state.employee.employee
-  );
+  const currentSelectedTask = useAppSelector((state) => state.task.task);
 
-  const handleDeleteEmployee = async (employee: Employee) => {
-    const currentEmployeeId = currentSelectedEmployee?.id;
-    if (isDeleteEmployeeLoading) return;
-    toast.promise(deleteEmployee(employee.id).unwrap(), {
-      loading: "Deleting employee...",
+  const handleDeleteTask = (task: Task) => {
+    toast.promise(deleteTask(task.id).unwrap(), {
+      loading: "Deleting task...",
       success: () => {
-        if (currentEmployeeId === employee.id) {
-          dispatch(clearEmployee());
+        if (currentSelectedTask?.id === task.id) {
+          dispatch(clearTask());
         }
-        return "Employee deleted successfully";
+        return "Task deleted successfully";
       },
-      error: (error) => {
-        return serializedError(error).error;
-      },
+      error: (error) => serializedError(error).error,
     });
   };
 
-  const handleUpdateEmployee = (employee: Employee) => {
-    dispatch(setEmployee(employee));
-  };
-
-  // Handle page out of range
-  React.useEffect(() => {
-    if (pagination && page > pagination.totalPages) {
-      setSearchParams({
-        ...Object.fromEntries(searchParams),
-        page: pagination.totalPages.toString(),
-      });
-    }
-  }, [pagination, page, searchParams, setSearchParams]);
-
-  const columns = React.useMemo<ColumnDef<Employee>[]>(
+  const columns = React.useMemo<ColumnDef<Task>[]>(
     () => [
       {
-        accessorKey: "name",
-        header: "Name",
-        size: 50,
+        accessorKey: "description",
+        header: "Description",
+        size: 500,
+        minSize: 500,
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("name")}</div>
+          <div className="capitalize text-sm line-clamp-1">
+            {row.getValue("description")}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "from",
+        header: "From",
+        size: 100,
+        minSize: 100,
+        cell: ({ row }) => (
+          <div>{format(new Date(row.getValue("from")), "hh:mm a")}</div>
+        ),
+      },
+      {
+        accessorKey: "to",
+        header: "To",
+        size: 100,
+        minSize: 100,
+        cell: ({ row }) => (
+          <div>{format(new Date(row.getValue("to")), "hh:mm a")}</div>
+        ),
+      },
+      {
+        id: "duration",
+        header: "Duration",
+        size: 100,
+        minSize: 100,
+        cell: ({ row }) => (
+          <div>
+            {formatDuration(
+              intervalToDuration({
+                start: new Date(row.getValue("from")),
+                end: new Date(row.getValue("to")),
+              })
+            )}
+          </div>
         ),
       },
       {
         accessorKey: "created_at",
+        size: 200,
+        minSize: 200,
         header: ({}) => {
           return (
             <div
@@ -145,49 +157,60 @@ export function EmployeesTable() {
           const employee = row.original;
 
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem>
-                  <Link to={`/${employee.id}`}>
-                    View
-                    <strong className="mx-1">{employee.name}</strong>
-                    Tasks
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={isDeleteEmployeeLoading}
-                  onClick={() => handleUpdateEmployee(employee)}
-                >
-                  <Edit className="h-4 w-4 mr-2" /> Edit
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  disabled={isDeleteEmployeeLoading}
-                  onClick={() => handleDeleteEmployee(employee)}
-                >
-                  <Trash className="h-4 w-4 mr-2" /> Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center space-x-2">
+              <Button
+                size={"icon"}
+                variant={"outline"}
+                disabled={isDeleteTaskLoading}
+                onClick={() => handleUpdateTask(employee)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                size={"icon"}
+                variant={"destructive"}
+                disabled={isDeleteTaskLoading}
+                onClick={() => handleDeleteTask(employee)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </div>
           );
         },
       },
     ],
-    [currentSelectedEmployee, isDeleteEmployeeLoading]
+    [currentSelectedTask, isDeleteTaskLoading]
   );
 
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  const tasks = data?.data ?? [];
+  const pagination = data?.pagination;
+
+  // Handle page out of range
+  React.useEffect(() => {
+    if (pagination && page > pagination.totalPages) {
+      setSearchParams({
+        ...Object.fromEntries(searchParams),
+        page: pagination.totalPages.toString(),
+      });
+    }
+  }, [pagination, page, searchParams, setSearchParams]);
+
   const table = useReactTable({
-    data: employees,
+    data: tasks,
     columns,
     manualPagination: true,
     pageCount: pagination?.totalPages,
+    defaultColumn: {
+      size: 200,
+    },
     state: {
       pagination: {
         pageIndex: page - 1,
@@ -250,7 +273,12 @@ export function EmployeesTable() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      style={{
+                        width: header.getSize(),
+                      }}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -315,4 +343,4 @@ export function EmployeesTable() {
       </div>
     </div>
   );
-}
+};

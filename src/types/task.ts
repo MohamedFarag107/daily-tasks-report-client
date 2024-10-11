@@ -18,6 +18,7 @@ export interface CreateTaskDto {
 }
 
 export interface UpdateTaskDto {
+  taskId: Task["id"];
   description: Task["description"];
   employeeId: number;
   from: Task["from"];

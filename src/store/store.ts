@@ -3,9 +3,13 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
 import { api } from "@/api/base";
+import { taskReducer } from "./task-slice";
+import { employeeReducer } from "./employee-slice";
 
 export const store = configureStore({
   reducer: {
+    task: taskReducer,
+    employee: employeeReducer,
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>
