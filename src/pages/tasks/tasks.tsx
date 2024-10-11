@@ -13,7 +13,7 @@ import { useAppSelector } from "@/store/store";
 import { TaskPageLoading } from "@/components/task-page-loading";
 import { ErrorCard } from "@/components/error-card";
 
-export const Tasks = () => {
+export default function Tasks() {
   const { employeeId } = useParams();
   const [date, setDate] = useState<Date>(new Date());
 
@@ -62,4 +62,4 @@ export const Tasks = () => {
       />
     </div>
   );
-};
+}
